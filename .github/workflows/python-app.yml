@@ -34,7 +34,7 @@ jobs:
       run: |
         python -m nuitka --standalone --onefile --assume-yes-for-downloads --output-dir=TEF-out src/TEF.py
     - name: Store the artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: TEF-standalone
         path: TEF-out/*.exe
