@@ -32,4 +32,4 @@ jobs:
         pip install nuitka
     - name: Building the application
       run: |
-        python -m nuitka --standalone --onefile --follow-imports --output-dir=src/main.py
+        python -m nuitka --standalone --onefile --follow-imports --output-dir=TEF-out src/TEF.py
