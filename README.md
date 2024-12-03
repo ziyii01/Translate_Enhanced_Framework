@@ -1,5 +1,11 @@
 # Translate Enhanced Framework
 
+## 功能
+
+可以方便地批量调用繁化姬API
+
+支持使用命令行或引用py库对外部代码进行扩展
+
 ## 食用方法
 
 ### 安裝依赖
