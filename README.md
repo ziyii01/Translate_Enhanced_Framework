@@ -1,4 +1,4 @@
-# use_zhconvert
+# Translate Enhanced Framework
 
 ## 食用方法
 
@@ -12,7 +12,7 @@ pip install chardet
 
 ### 使用
 
-```bash
+```
 ::使用命令行键入
 py main.py
 
