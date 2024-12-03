@@ -10,8 +10,9 @@ log.remove()
 log.add(sys.stderr, format="<green>{time:YYYY.MM.DD HH:mm:ss.SS}</green><blue><level> [{level}] {message}</level></blue>", level="INFO")
 
 
-URL_ROOT = "https://api.zhconvert.org"
-
+PROJECT_NAME = "Translate Enhanced Framework"
+PROJECT_VERSION = "0.3"
+PROJECT_URL = "https://github.com/ziyii01/use_zhconvert"
 
 
 def get_all_ass_path(dir_path: str) -> list[str]:
@@ -49,7 +50,11 @@ def get_encoding_by_text(pathname: str) -> str | None:
     return encoding
 
 
+
+FHJ_API_URL = "https://api.zhconvert.org"
+
 class Zhconvert:
+
     @staticmethod
     def convert(
         text: str,
@@ -62,9 +67,9 @@ class Zhconvert:
         converter:
         Simplified、 Traditional、 China、 Hongkong、 Taiwan、 Pinyin （拼音化） Bopomofo （注音化）、 Mars （火星化）、 WikiSimplified （維基簡體化）、 WikiTraditional （維基繁體化）
         """
-        api = '/convert'
+
         return httpx.post(
-            f"{URL_ROOT}/{api}",
+            FHJ_API_URL+"/convert",
             data={
                 "text": text,
                 "converter": converter,
@@ -129,8 +134,10 @@ def run_command(command: str):
 
     if command == "help":
         print(
+            f"{PROJECT_NAME}\nVersion: {PROJECT_VERSION}\n{PROJECT_URL}\n"
+            "\n"
             "Help:\n"
-            "  You can input command or use the argument value to run"
+            "  You can input command or use the argument value to run\n"
             "\n"
             "Commands:\n"
             "  exit\n"
