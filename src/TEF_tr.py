@@ -76,6 +76,8 @@ class Tr:
 
         if converter == "Simplified":
             lang_tag = "zh-Hans"
+        if converter == "China":
+            lang_tag = "zh-Hans-CN"
         elif converter == "Traditional":
             lang_tag = "zh-Hant"
         elif converter == "Hongkong":
