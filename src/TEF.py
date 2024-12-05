@@ -8,7 +8,7 @@ from TEF_tr import Tr
 
 
 PROJECT_NAME = "Translate Enhanced Framework"
-PROJECT_VERSION = "0.4.1"
+PROJECT_VERSION = "0.5"
 PROJECT_URL = "https://github.com/ziyii01/use_zhconvert"
 
 
@@ -69,9 +69,12 @@ def run_command(command: str):
         Tr.current_sub_list = get_all_sub_path(Tr.dir_path)
 
     elif command == "tr all" or command == "translate all":
-        for pathname in (sub.pathname for sub in Tr.current_sub_list
-                         if sub.lang == "zh-Hans" and sub.suffix == "ass"):
-            Tr.translate(pathname, 'Traditional')
+        prograss = 1
+        for sub in (sub for sub in Tr.current_sub_list
+                    if sub.lang == "zh-Hans" and sub.suffix == "ass"):
+            log.info(f"Translate all zh-Hans ass: {prograss} / {len(Tr.current_sub_list)} ...")
+            Tr.tr_and_overwrite(sub, 'Traditional')
+            prograss = prograss+1
 
     elif command[:2] == "cd":
         new_path = command.replace("cd","").strip()
@@ -95,30 +98,26 @@ def run_command(command: str):
             print(repr(e))
 
     else:
-        pathname = command + ".zh-Hans.ass"
-        if os.path.exists(pathname):
-            Tr.translate(pathname, 'Traditional')
+        sub = list(filter(
+            lambda sub: sub.prefix == command and sub.lang == "zh-Hans" and sub.suffix == "ass",
+            Tr.current_sub_list
+        ))[0]
+        if os.path.exists(sub.pathname):
+            log.info(f'Translate "{sub.pathname}"')
+            Tr.tr_and_overwrite(sub, 'Traditional')
         else:
-            log.warning(f'Can not find the file "{pathname}", cancel the translation')
+            log.warning(f'Can not find the file "{sub.pathname}", cancel the translation')
 
 
 if __name__ == "__main__":
     
     Tr.dir_path = os.getcwd()
     Tr.current_sub_list = get_all_sub_path(Tr.dir_path)
-
-    # def get_zh_hans_ass_list():
-    #     all_ass_list = get_all_ass_path(dir_path)
-    #     zh_hans_ass_list = match_suffix_in_list(all_ass_list, ".zh-Hans.ass")
-    #     return all_ass_list, zh_hans_ass_list
     
     def show_list(list: list[Sub] | tuple[Sub], list_name: str):
         print(f'{list_name}:')
         for sub in list:
             print(f'  {sub.pathname}')
-
-    
-    # all_ass_list, zh_hans_ass_list = get_zh_hans_ass_list()
     
     for argv in sys.argv[1:]:
         run_command(argv)

@@ -1,46 +1,20 @@
-import os
-import locale
-import codecs
+import copy
 
 import httpx
-import chardet
 
 from TEF_log import log
 from TEF_sub import Sub
-
-
-
-def get_encoding_by_text(pathname: str) -> str | None:
-    with open(pathname, "rb") as file:
-        text_data = file.read()
-        encoding = chardet.detect(text_data)["encoding"]
-
-    if encoding == None:
-        log.warning(f'Can not find the encoding from "{pathname}", auto use UTF-8')
-        return 'utf8'
-
-    if encoding == 'GB2312' or encoding == 'cp936':
-        encoding = 'gb18030-2000'
-    
-    if not encoding.startswith("UTF") and not encoding == 'gb18030-2000':
-        locale_encoding = locale.getencoding()
-        log.warning(f'Auto find the encoding is {encoding}, it may be {locale_encoding} ({codecs.lookup(locale_encoding).name}), has been auto changed it')
-        encoding = locale_encoding
-    
-    log.info(f"Auto find the encoding is {encoding} ({codecs.lookup(encoding).name})")
-    return encoding
-
 
 
 FHJ_API_URL = "https://api.zhconvert.org"
 
 class Tr:
 
-    dir_path:str
+    dir_path: str
     current_sub_list: list[Sub]
 
     @staticmethod
-    def convert(
+    def fhj_convert(
         text: str,
         converter: str,
         apiKey = "",
@@ -69,7 +43,8 @@ class Tr:
                 log.error(f"Tr.convert Timeout, trying to reconnect. Times of reconnect: {time}. Remaining reconnect times: {max_timeout_times-time}.")
 
         return response
-    
+
+
     @staticmethod
     def find_langTag_by_converter(converter: str) -> str:
         lang_tag: str = "Unknow"
@@ -87,34 +62,40 @@ class Tr:
 
         return lang_tag
 
+
     @staticmethod
-    def translate(input_pathname: str, converter: str) -> bool:
-        if not os.path.exists(input_pathname):
-            log.error(f'The input file "{input_pathname}" is not exist')
-            return False
-        
-        encoding = get_encoding_by_text(input_pathname)
-        
-        with open(input_pathname, "rt", encoding = encoding) as file:
-            text_data = file.read()
-        response = Tr.convert(text_data, converter)
+    def translate(sub: Sub, converter: str) -> Sub | None:
+
+        response = Tr.fhj_convert(sub.text, converter)
         if response.status_code != 200:
             log.error(f"网址请求失败: {response.text}")
-            return False
+            return None
+
         response_json_data = response.json()
         if response_json_data["code"] != 0:
             log.error(f"繁化姬接口失败: {response_json_data['msg']}")
-            return False
+            return None
+
         else:
-            last_dot_index = input_pathname.rfind('.')
-            second_last_dot_index = input_pathname.rindex('.', 0, last_dot_index)
-            output_pathname = f'{input_pathname[:second_last_dot_index]}.{Tr.find_langTag_by_converter(converter)}.ass'
+            new_sub = copy.deepcopy(sub)
 
-            if os.path.exists(output_pathname):
-                log.warning(f'The output file "{output_pathname}" already exists, auto overwrite it')
+            new_sub.lang = Tr.find_langTag_by_converter(converter)
+            new_sub.splice_pathname()
 
-            with open(output_pathname, "wt", encoding = 'utf_8_sig') as file:
-                file.write(response_json_data["data"]["text"])
+            new_sub.text = response_json_data["data"]["text"]
             
-            log.info(f'Translate the file "{input_pathname}" to "{output_pathname}" success')
-            return True
+            
+
+            return new_sub
+
+
+    @staticmethod
+    def tr_and_overwrite(sub: Sub, converter: str, encoding: str = 'utf_8_sig') -> None:
+
+        output_sub = Tr.translate(sub, converter)
+
+        output_sub.encoding = encoding
+        output_sub.overwrite_file()
+
+        log.info(f'Translate the file "{sub.pathname}" to "{output_sub.pathname}" success')
+
