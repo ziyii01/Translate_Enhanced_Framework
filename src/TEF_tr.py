@@ -98,4 +98,3 @@ class Tr:
         output_sub.overwrite_file()
 
         log.info(f'Translate the file "{sub.pathname}" to "{output_sub.pathname}" success')
-

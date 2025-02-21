@@ -8,7 +8,7 @@ from TEF_tr import Tr
 
 
 PROJECT_NAME = "Translate Enhanced Framework"
-PROJECT_VERSION = "0.5"
+PROJECT_VERSION = "0.5.1"
 PROJECT_URL = "https://github.com/ziyii01/use_zhconvert"
 
 
@@ -98,15 +98,18 @@ def run_command(command: str):
             print(repr(e))
 
     else:
-        sub = list(filter(
-            lambda sub: sub.prefix == command and sub.lang == "zh-Hans" and sub.suffix == "ass",
-            Tr.current_sub_list
-        ))[0]
-        if os.path.exists(sub.pathname):
-            log.info(f'Translate "{sub.pathname}"')
-            Tr.tr_and_overwrite(sub, 'Traditional')
-        else:
-            log.warning(f'Can not find the file "{sub.pathname}", cancel the translation')
+        try:
+            sub = list(filter(
+                lambda sub: sub.prefix == command and sub.lang == "zh-Hans" and sub.suffix == "ass",
+                Tr.current_sub_list
+            ))[0]
+            if os.path.exists(sub.pathname):
+                log.info(f'Translate "{sub.pathname}"')
+                Tr.tr_and_overwrite(sub, 'Traditional')
+            else:
+                log.warning(f'Can not find the file "{sub.pathname}", cancel the translation')
+        except Exception as e:
+            log.error(f'ep num error: {e}')
 
 
 if __name__ == "__main__":

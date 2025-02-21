@@ -1,5 +1,4 @@
 import os
-import sys
 import locale
 import codecs
 
@@ -54,14 +53,14 @@ class Sub:
             text_data = file.read()
             encoding = chardet.detect(text_data)["encoding"]
 
-        if encoding == None:
+        if encoding is None:
             log.warning(f'Can not find the encoding from "{self.pathname}", auto use UTF-8')
             return 'utf8'
 
         if encoding == 'GB2312' or encoding == 'cp936':
             encoding = 'gb18030-2000'
         
-        elif not encoding.startswith("UTF"):
+        elif not (encoding.startswith("UTF") or encoding.startswith("utf")):
             locale_encoding = locale.getencoding()
             log.warning(f'Auto find the encoding is {encoding}, it may be {locale_encoding} ({codecs.lookup(locale_encoding).name}), has been auto changed it')
             encoding = locale_encoding
@@ -76,8 +75,13 @@ class Sub:
             raise Exception("A Sub obj is missing the member var 'encoding': Sub.get_text")
 
         if os.path.exists(self.pathname):
-            with open(self.pathname, 'rt', encoding = self.encoding) as file:
-                self.text = file.read()
+            try:
+                with open(self.pathname, 'rt', encoding = self.encoding) as file:
+                    self.text = file.read()
+            except UnicodeDecodeError:
+                log.error(f'The encoding "{self.encoding}" is not correct, try UTF-8 instead')
+                with open(self.pathname, 'rt', encoding = 'utf-8') as file:
+                    self.text = file.read()
         else:
             log.error(f'The input file "{self.pathname}" is not exist')
             self.text = ""
