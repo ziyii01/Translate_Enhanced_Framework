@@ -26,10 +26,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install httpx
-        pip install loguru
-        pip install chardet
-        pip install nuitka
+        pip install -U httpx chardet nuitka
     - name: Building the application
       run: |
         python -m nuitka --standalone --onefile --assume-yes-for-downloads --output-dir=TEF-out src/TEF.py

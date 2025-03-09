@@ -1,4 +1,5 @@
 import copy
+import enum
 
 import httpx
 
@@ -8,65 +9,82 @@ from TEF_sub import Sub
 
 FHJ_API_URL = "https://api.zhconvert.org"
 
-class Tr:
 
+class Tr:
     dir_path: str
     current_sub_list: list[Sub]
 
+    class LangTag(enum.Enum):
+        Unknow = "Unknow"
+        zh_Hans = "zh-Hans"
+        zh_Hans_CN = "zh-Hans-CN"
+        zh_Hant = "zh-Hant"
+        zh_Hant_HK = "zh-Hant-HK"
+        zh_Hant_TW = "zh-Hant-TW"
+
+    class FhjConverter(enum.Enum):
+        Simplified = "Simplified"
+        Traditional = "Traditional"
+        China = "China"
+        Hongkong = "Hongkong"
+        Taiwan = "Taiwan"
+        Pinyin = "Pinyin"  # 拼音化
+        Bopomofo = "Bopomofo"  # 注音化
+        Mars = "Mars"  # 火星化
+        WikiSimplified = "WikiSimplified"  # 維基簡體化
+        WikiTraditional = "WikiTraditional"  # 維基繁體化
+
     @staticmethod
-    def fhj_convert(
+    def fhj_get_res(
         text: str,
-        converter: str,
-        apiKey = "",
-        outputFormat = "json",
-        prettify = "false",
+        langTag: LangTag,
+        apiKey="",
+        outputFormat="json",
+        prettify="false",
     ) -> httpx.Response:
-        """
-        converter:  
-        Simplified、 Traditional、 China、 Hongkong、 Taiwan、 Pinyin （拼音化） Bopomofo （注音化）、 Mars （火星化）、 WikiSimplified （維基簡體化）、 WikiTraditional （維基繁體化）
-        """
-        
-        max_timeout_times = 3
-        for time in range(1, max_timeout_times+1):
+        match langTag:
+            case Tr.LangTag.zh_Hans:
+                converter = Tr.FhjConverter.Simplified
+
+            case Tr.LangTag.zh_Hans_CN:
+                converter = Tr.FhjConverter.China
+
+            case Tr.LangTag.zh_Hant:
+                converter = Tr.FhjConverter.Traditional
+
+            case Tr.LangTag.zh_Hant_HK:
+                converter = Tr.FhjConverter.Hongkong
+
+            case Tr.LangTag.zh_Hant_TW:
+                converter = Tr.FhjConverter.Taiwan
+
+            case _:
+                converter = Tr.LangTag.Unknow
+
+        TIMEOUT = 3
+        for time in range(1, TIMEOUT + 1):
             try:
                 response = httpx.post(
-                    FHJ_API_URL+"/convert",
+                    FHJ_API_URL + "/convert",
                     data={
                         "text": text,
-                        "converter": converter,
+                        "converter": converter.value,
                         "apiKey": apiKey,
                         "outputFormat": outputFormat,
                         "prettify": prettify,
-                    }, 
+                    },
                 )
             except httpx.ConnectTimeout:
-                log.error(f"Tr.convert Timeout, trying to reconnect. Times of reconnect: {time}. Remaining reconnect times: {max_timeout_times-time}.")
+                log.error(
+                    f"Tr.convert Timeout, trying to reconnect. Times of reconnect: {time}. Remaining reconnect times: {TIMEOUT - time}."
+                )
 
         return response
 
-
     @staticmethod
-    def find_langTag_by_converter(converter: str) -> str:
-        lang_tag: str = "Unknow"
+    def translate(sub: Sub, lang_tag: LangTag) -> Sub | None:
+        response = Tr.fhj_get_res(sub.text, lang_tag)
 
-        if converter == "Simplified":
-            lang_tag = "zh-Hans"
-        if converter == "China":
-            lang_tag = "zh-Hans-CN"
-        elif converter == "Traditional":
-            lang_tag = "zh-Hant"
-        elif converter == "Hongkong":
-            lang_tag = "zh-Hant-HK"
-        elif converter == "Taiwan":
-            lang_tag = "zh-Hant-TW"
-
-        return lang_tag
-
-
-    @staticmethod
-    def translate(sub: Sub, converter: str) -> Sub | None:
-
-        response = Tr.fhj_convert(sub.text, converter)
         if response.status_code != 200:
             log.error(f"网址请求失败: {response.text}")
             return None
@@ -79,22 +97,24 @@ class Tr:
         else:
             new_sub = copy.deepcopy(sub)
 
-            new_sub.lang = Tr.find_langTag_by_converter(converter)
+            new_sub.lang = lang_tag.value
             new_sub.splice_pathname()
 
             new_sub.text = response_json_data["data"]["text"]
-            
-            
 
             return new_sub
 
-
     @staticmethod
-    def tr_and_overwrite(sub: Sub, converter: str, encoding: str = 'utf_8_sig') -> None:
-
-        output_sub = Tr.translate(sub, converter)
+    def tr_and_overwrite(
+        sub: Sub, target_lang_tag: LangTag, encoding: str = "utf_8_sig"
+    ):
+        if (output_sub := Tr.translate(sub, target_lang_tag)) is None:
+            log.error("Translate failed")
+            return None
 
         output_sub.encoding = encoding
         output_sub.overwrite_file()
 
-        log.info(f'Translate the file "{sub.pathname}" to "{output_sub.pathname}" success')
+        log.info(
+            f'Translate success: ({sub.lang} -> {target_lang_tag.value}) ("{sub.pathname}" -> "{output_sub.pathname}")'
+        )

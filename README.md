@@ -13,7 +13,7 @@
 有两种方式可供选择
 
 * 使用python环境运行  
-  需要安装python和相关依赖库: `pip install -U httpx loguru chardet`
+  需要安装python和相关依赖库: `pip install -U httpx chardet`
 * 使用exe运行  
   前往[Actions](https://github.com/ziyii01/Translate_Enhanced_Framework/actions)下载最新编译的exe，或者前往[Releases](https://github.com/ziyii01/Translate_Enhanced_Framework/releases)找到手动上传的exe  
   (二者是一样的，Actions中会自动编译每个版本，Releases中是将自动编译的版本手动发布的)
@@ -21,13 +21,16 @@
 ### 运行
 
 ```
-::使用命令行键入
+# 使用命令行键入
 py TEF.py
 TEF.exe
 
-::使用命令行传参
+# 使用命令行传参
 py TEF.py [command 1, command 2, ...]
 TEF.exe [command 1, command 2, ...]
+
+# 查看 help
+TEF.exe help
 ```
 
 
