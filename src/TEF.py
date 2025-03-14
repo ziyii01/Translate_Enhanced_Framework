@@ -1,6 +1,7 @@
 import os
 import shlex
 import sys
+from typing import Generator
 
 
 from TEF_log import log
@@ -9,7 +10,7 @@ from TEF_tr import Tr
 
 
 PROJECT_NAME = "Translate Enhanced Framework"
-PROJECT_VERSION = "1.0"
+PROJECT_VERSION = "1.0.1"
 PROJECT_URL = "https://github.com/ziyii01/use_zhconvert"
 
 
@@ -25,10 +26,10 @@ def get_all_sub_path(dir: str) -> list[Sub]:
 
 
 def run_command(command: list[str] | str):
-    if type(command) is list:
+    if isinstance(command, list):
         cmd_list = command
 
-    elif type(command) is str:
+    elif isinstance(command, str):
         try:
             cmd_list = [
                 cmd.strip('"').strip("'").replace("\\\\", "\\")
@@ -38,7 +39,7 @@ def run_command(command: list[str] | str):
             log.error(e)
             return False
 
-    cmd_list.append(None)
+    cmd_list.append("")
 
     match cmd_list[0]:
         case "v" | "ver" | "version":
@@ -133,7 +134,7 @@ def run_command(command: list[str] | str):
         case "tr" | "translate":
             match cmd_list[1]:
                 case "all":
-                    if cmd_list[2] is None:
+                    if not cmd_list[2]:
                         find_lang = Tr.LangTag.zh_Hans
                         target_lang = Tr.LangTag.zh_Hant
                     else:
@@ -141,7 +142,7 @@ def run_command(command: list[str] | str):
                             find_lang = Tr.LangTag(cmd_list[2])
                             target_lang = (
                                 Tr.LangTag.zh_Hant
-                                if cmd_list[3] is None
+                                if not cmd_list[3]
                                 else Tr.LangTag(cmd_list[3])
                             )
                         except Exception as e:
@@ -162,13 +163,13 @@ def run_command(command: list[str] | str):
                         progress = progress + 1
 
                 case _:
-                    if cmd_list[1] is None:
-                        log.error("File pathname is None")
+                    if not cmd_list[1]:
+                        log.error("File pathname is empty")
                         return False
                     if os.path.exists(cmd_list[1]):
                         log.error(f"File {cmd_list[1]} not exist")
                         return False
-                    if (target_lang := cmd_list[2]) is None:
+                    if not (target_lang := cmd_list[2]):
                         log.error("Need target lang")
                         return False
 
@@ -207,12 +208,12 @@ if __name__ == "__main__":
     Tr.dir_path = os.getcwd()
     Tr.current_sub_list = get_all_sub_path(Tr.dir_path)
 
-    def show_list(list: list[Sub] | tuple[Sub], list_name: str):
+    def show_list(list: list[Sub] | tuple[Sub] | Generator[Sub], list_name: str):
         print(f"{list_name}:")
         for sub in list:
             print(f"  {sub.pathname}")
 
-    if sys.argv[1:] != []:
+    if len(sys.argv) > 1:
         run_command(sys.argv[1:])
         sys.exit()
 

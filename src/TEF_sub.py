@@ -21,9 +21,11 @@ class Sub:
     text: str
 
     def splice_pathname(self):
-        self.pathname = ".".join(
-            [os.path.join(self.path, self.prefix), self.lang, self.suffix]
-        )
+        if self.lang is None:
+            _tuple = (os.path.join(self.path, self.prefix), self.suffix)
+        else:
+            _tuple = (os.path.join(self.path, self.prefix), self.lang, self.suffix)
+        self.pathname = ".".join(_tuple)
 
     def split_pathname(self):
         self.path, filename = os.path.split(self.pathname)

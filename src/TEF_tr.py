@@ -41,7 +41,7 @@ class Tr:
         apiKey="",
         outputFormat="json",
         prettify="false",
-    ) -> httpx.Response:
+    ) -> httpx.Response | None:
         match langTag:
             case Tr.LangTag.zh_Hans:
                 converter = Tr.FhjConverter.Simplified
@@ -61,6 +61,7 @@ class Tr:
             case _:
                 converter = Tr.LangTag.Unknow
 
+        response = None
         TIMEOUT = 3
         for time in range(1, TIMEOUT + 1):
             try:
@@ -74,6 +75,7 @@ class Tr:
                         "prettify": prettify,
                     },
                 )
+                break
             except httpx.ConnectTimeout:
                 log.error(
                     f"Tr.convert Timeout, trying to reconnect. Times of reconnect: {time}. Remaining reconnect times: {TIMEOUT - time}."
@@ -84,6 +86,10 @@ class Tr:
     @staticmethod
     def translate(sub: Sub, lang_tag: LangTag) -> Sub | None:
         response = Tr.fhj_get_res(sub.text, lang_tag)
+
+        if response is None:
+            log.error("翻译失败")
+            return None
 
         if response.status_code != 200:
             log.error(f"网址请求失败: {response.text}")
