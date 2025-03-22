@@ -10,7 +10,7 @@ from TEF_tr import Tr
 
 
 PROJECT_NAME = "Translate Enhanced Framework"
-PROJECT_VERSION = "1.0.2"
+PROJECT_VERSION = "1.1"
 PROJECT_URL = "https://github.com/ziyii01/use_zhconvert"
 
 
@@ -211,7 +211,7 @@ if __name__ == "__main__":
     def show_list(list: list[Sub] | tuple[Sub] | Generator[Sub], list_name: str):
         print(f"{list_name}:")
         for sub in list:
-            print(f"  {sub.pathname}")
+            print(f"  {sub.pathname} ({sub.encoding})")
 
     if len(sys.argv) > 1:
         run_command(sys.argv[1:])

@@ -45,16 +45,17 @@ class Sub:
             self.prefix = filename[:last_dot_index]
             self.lang = None
 
-    def get_encoding(self):
+    def get_encoding(self) -> None:
         with open(self.pathname, "rb") as file:
             text_data = file.read()
             encoding = chardet.detect(text_data)["encoding"]
 
         if encoding is None:
             log.warning(
-                f'Can not find the encoding from "{self.pathname}", auto use UTF-8'
+                f'Can not find the encoding from "{self.pathname}", default use of UTF-8'
             )
-            return "utf8"
+            self.encoding = "utf-8"
+            return
 
         if encoding == "GB2312" or encoding == "cp936":
             encoding = "gb18030-2000"
@@ -62,12 +63,12 @@ class Sub:
         elif not (encoding.startswith("UTF") or encoding.startswith("utf")):
             locale_encoding = locale.getencoding()
             log.warning(
-                f"Auto find the encoding is {encoding}, it may be {locale_encoding} ({codecs.lookup(locale_encoding).name}), has been auto changed it"
+                f"Auto find the encoding is {encoding}, it may be {locale_encoding} ({codecs.lookup(locale_encoding).name}), default use of UTF-8"
             )
-            encoding = locale_encoding
+            encoding = "utf-8"
 
         log.info(
-            f"Auto find the encoding is {encoding} ({codecs.lookup(encoding).name})"
+            f"Auto guessing that the encoding may be {encoding} ({codecs.lookup(encoding).name})"
         )
 
         self.encoding = encoding
