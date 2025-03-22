@@ -10,7 +10,7 @@ from TEF_tr import Tr
 
 
 PROJECT_NAME = "Translate Enhanced Framework"
-PROJECT_VERSION = "1.0.1"
+PROJECT_VERSION = "1.0.2"
 PROJECT_URL = "https://github.com/ziyii01/use_zhconvert"
 
 
@@ -166,7 +166,7 @@ def run_command(command: list[str] | str):
                     if not cmd_list[1]:
                         log.error("File pathname is empty")
                         return False
-                    if os.path.exists(cmd_list[1]):
+                    if not os.path.exists(cmd_list[1]):
                         log.error(f"File {cmd_list[1]} not exist")
                         return False
                     if not (target_lang := cmd_list[2]):
