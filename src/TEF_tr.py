@@ -62,8 +62,10 @@ class Tr:
                 converter = Tr.LangTag.Unknow
 
         response = None
-        TIMEOUT = 3
-        for time in range(1, TIMEOUT + 1):
+        TIMEOUT_MAX_TIME = 3
+        for time in range(1, TIMEOUT_MAX_TIME + 1):
+            timeout_global = 5 + time * 2
+            timeout_read = 20 * time**2
             try:
                 response = httpx.post(
                     FHJ_API_URL + "/convert",
@@ -74,15 +76,16 @@ class Tr:
                         "outputFormat": outputFormat,
                         "prettify": prettify,
                     },
+                    timeout=httpx.Timeout(timeout_global, read=timeout_read),
                 )
                 break
             except httpx.ConnectTimeout:
                 log.error(
-                    f"Tr.convert Timeout, trying to reconnect. Times of reconnect: {time}. Remaining reconnect times: {TIMEOUT - time}."
+                    f"Tr.convert httpx.ConnectTimeout, trying to reconnect. Times of reconnect: {time}. Remaining reconnect times: {TIMEOUT_MAX_TIME - time}. {timeout_global=}, {timeout_read=}"
                 )
             except httpx.ReadTimeout:
                 log.error(
-                    f"Tr.convert ReadTimeout, trying to reconnect. Times of reconnect: {time}. Remaining reconnect times: {TIMEOUT - time}."
+                    f"Tr.convert httpx.ReadTimeout, trying to reconnect. Times of reconnect: {time}. Remaining reconnect times: {TIMEOUT_MAX_TIME - time}. {timeout_global=}, {timeout_read=}"
                 )
 
         return response
