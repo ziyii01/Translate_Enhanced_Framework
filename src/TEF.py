@@ -10,7 +10,7 @@ from TEF_tr import Tr
 
 
 PROJECT_NAME = "Translate Enhanced Framework"
-PROJECT_VERSION = "1.1"
+PROJECT_VERSION = "1.1.1"
 PROJECT_URL = "https://github.com/ziyii01/use_zhconvert"
 
 

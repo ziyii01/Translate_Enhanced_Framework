@@ -80,6 +80,10 @@ class Tr:
                 log.error(
                     f"Tr.convert Timeout, trying to reconnect. Times of reconnect: {time}. Remaining reconnect times: {TIMEOUT - time}."
                 )
+            except httpx.ReadTimeout:
+                log.error(
+                    f"Tr.convert ReadTimeout, trying to reconnect. Times of reconnect: {time}. Remaining reconnect times: {TIMEOUT - time}."
+                )
 
         return response
 
